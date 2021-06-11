@@ -1,0 +1,47 @@
+#!/usr/local/bin/ruby -w
+# This script generates a new Rails project with PostgreSQL as the
+# database and RSpec as the test framework
+# Note that to run the bundle and rails command, the current
+# working directory must be the root of the new Rails project
+# and a change directory will only work within the child process
+# thus `cd pgblog && bundle install`
+
+# TODO generalize this to accept the new project name etc.
+
+### Rails New Postgres ###
+# Rails New to build the desired project
+# with postgresql as DB and no unit test
+puts "Rails new pgblog..."
+output = `rails new pgblog -T -d postgresql`
+puts output
+
+### Add Rails RSpec ###
+# Modify Gemfile to add rspec-rails gem
+puts "Modifying Gemfile to add rspec-rails..."
+File.open('pgblog/Gemfile') do |i|
+  File.open('output', 'w') do |o|
+    while line = i.gets
+      o.puts line
+      if line.chomp == "group :development, :test do"
+        o.puts "  gem 'rspec-rails'"
+      end
+    end
+  end
+end
+`mv output pgblog/Gemfile`
+output = `cat pgblog/Gemfile` 
+puts output
+
+# Install rspec-rails
+puts "Bundle install rspec-rails..."
+output = `cd pgblog && bundle install`
+puts output
+
+# Railds generate rspec
+puts "Rails generate rspec..."
+output = `cd pgblog && rails generate rspec:install`
+puts output
+
+# Run RSpec empty
+output = `cd pgblog && bundle exec rspec`
+puts output
